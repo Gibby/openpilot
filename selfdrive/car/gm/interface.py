@@ -38,11 +38,19 @@ class CarInterface(CarInterfaceBase):
     sigmoid = desired_angle / (1 + fabs(desired_angle))
     return 0.04689655 * sigmoid * (v_ego + 10.028217)
 
+  @staticmethod
+  def get_steer_feedforward_escalade_esv(desired_angle, v_ego):
+    desired_angle *= 0.01463516
+    sigmoid = desired_angle / (1 + fabs(desired_angle))
+    return 0.12147129 * sigmoid * (v_ego + 0.02718132)
+
   def get_steer_feedforward_function(self):
     if self.CP.carFingerprint == CAR.VOLT:
       return self.get_steer_feedforward_volt
     elif self.CP.carFingerprint == CAR.ACADIA:
       return self.get_steer_feedforward_acadia
+    elif self.CP.carFingerprint == CAR.ESCALADE_ESV:
+      return self.get_steer_feedforward_escalade_esv
     else:
       return CarInterfaceBase.get_steer_feedforward_default
 
@@ -172,7 +180,8 @@ class CarInterface(CarInterfaceBase):
       ret.centerToFront = ret.wheelbase * 0.49
       ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[10., 41.0], [10., 41.0]]
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.13, 0.24], [0.01, 0.02]]
-      ret.lateralTuning.pid.kf = 0.000045
+      #ret.lateralTuning.pid.kf = 0.000045
+      ret.lateralTuning.pid.kf = 1. # get_steer_feedforward_escalade_esv()
       tire_stiffness_factor = 1.0
 
     # TODO: get actual value, for now starting with reasonable value for
