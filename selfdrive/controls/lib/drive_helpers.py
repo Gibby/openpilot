@@ -4,6 +4,7 @@ from common.realtime import DT_MDL
 from common.params import Params
 from selfdrive.config import Conversions as CV
 from selfdrive.modeld.constants import T_IDXS
+from common.op_params import opParams
 
 
 # kph
@@ -124,7 +125,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
     curvature_rates = [0.0 for i in range(CONTROL_N)]
 
   # TODO this needs more thought, use .2s extra for now to estimate other delays
-  delay = CP.steerActuatorDelay + .2
+  delay = opParams().get("LAT_DELAY") + .2
   current_curvature = curvatures[0]
   psi = interp(delay, T_IDXS[:CONTROL_N], psis)
   desired_curvature_rate = curvature_rates[0]

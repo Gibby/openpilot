@@ -3,6 +3,7 @@ from common.numpy_fast import clip, interp
 from selfdrive.controls.lib.pid import PIController
 from selfdrive.controls.lib.drive_helpers import CONTROL_N
 from selfdrive.modeld.constants import T_IDXS
+from common.op_params import opParams
 
 LongCtrlState = car.CarControl.Actuators.LongControlState
 
@@ -70,6 +71,7 @@ class LongControl():
     self.coasting_lead_d = -1.
     self.coasting_lead_v = -1.
     self.tr = 1.8
+    self.op_params = opParams()
 
   def reset(self, v_pid):
     """Reset PID controller and change setpoint"""

@@ -10,6 +10,7 @@ from selfdrive.controls.lib.lane_planner import LanePlanner, TRAJECTORY_SIZE
 from selfdrive.config import Conversions as CV
 import cereal.messaging as messaging
 from cereal import log
+from common.op_params import opParams
 
 LaneChangeState = log.LateralPlan.LaneChangeState
 LaneChangeDirection = log.LateralPlan.LaneChangeDirection
@@ -73,6 +74,7 @@ class LateralPlanner():
     self.y_pts = np.zeros(TRAJECTORY_SIZE)
     self.d_path_w_lines_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.second = 0.0
+    self.op_params = opParams()
 
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
@@ -138,7 +140,7 @@ class LateralPlanner():
         torque_applied = sm['carState'].steeringPressed and \
                         ((sm['carState'].steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
                           (sm['carState'].steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))
-        
+
         torque_applied = torque_applied or (self.nudgeless_enabled and t - self.preLaneChange_start_t > self.nudgeless_delay)
 
         blindspot_detected = ((sm['carState'].leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
@@ -194,6 +196,7 @@ class LateralPlanner():
       self.LP.lll_prob *= self.lane_change_ll_prob
       self.LP.rll_prob *= self.lane_change_ll_prob
     self.d_path_w_lines_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
+    self.steer_rate_cost = self.op_params.get("LAT_COST")
     if self.use_lanelines:
       d_path_xyz = self.d_path_w_lines_xyz
       self.libmpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, CP.steerRateCost)
@@ -293,7 +296,7 @@ class LateralPlanner():
 
     plan_send.lateralPlan.dPathWLinesX = [float(x) for x in self.d_path_w_lines_xyz[:, 0]]
     plan_send.lateralPlan.dPathWLinesY = [float(y) for y in self.d_path_w_lines_xyz[:, 1]]
-    
+
     plan_send.lateralPlan.lanelessMode = bool(self.laneless_mode_status)
 
     pm.send('lateralPlan', plan_send)

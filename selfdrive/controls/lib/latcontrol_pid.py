@@ -1,16 +1,16 @@
 import math
-from selfdrive.config import Conversions as CV
-from selfdrive.controls.lib.pid import PIController
+from selfdrive.controls.lib.pid import LatPIController
 from selfdrive.controls.lib.drive_helpers import get_steer_max
 from cereal import log, car
 
 
 class LatControlPID():
   def __init__(self, CP, CI):
-    self.pid = PIController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
-                            (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
-                            k_f=CP.lateralTuning.pid.kf, pos_limit=1.0, neg_limit=-1.0,
-                            sat_limit=CP.steerLimitTimer)
+    self.pid = LatPIController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
+                              (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
+                              k_f=CP.lateralTuning.pid.kf,
+                              pos_limit=1.0, neg_limit=-1.0,
+                              sat_limit=CP.steerLimitTimer)
     self.get_steer_feedforward = CI.get_steer_feedforward_function()
 
   def reset(self):
@@ -35,7 +35,7 @@ class LatControlPID():
       steers_max = get_steer_max(CP, CS.vEgo)
       self.pid.pos_limit = steers_max
       self.pid.neg_limit = -steers_max
-      
+
       steer_feedforward = self.get_steer_feedforward(angle_steers_des_no_offset, CS.vEgo)
 
       deadzone = 0.0

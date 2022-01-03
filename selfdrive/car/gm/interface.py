@@ -60,23 +60,23 @@ class CarInterface(CarInterfaceBase):
   params_check_last_t = 0.
   params_check_freq = 0.1 # check params at 10Hz
   params = CarControllerParams()
-  
+
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed, CI = None):
     following = CI.CS.coasting_lead_d > 0. and CI.CS.coasting_lead_d < 45.0 and CI.CS.coasting_lead_v > current_speed
     accel_limits = calc_cruise_accel_limits(current_speed, following, CI.CS.accel_mode)
-    
+
     # decrease min accel as necessary based on lead conditions
     stock_min_factor = interp(current_speed - CI.CS.coasting_lead_v, _A_MIN_V_STOCK_FACTOR_BP, _A_MIN_V_STOCK_FACTOR_V) if CI.CS.coasting_lead_d > 0. else 0.
     accel_limits[0] = stock_min_factor * CI.params.ACCEL_MIN + (1. - stock_min_factor) * accel_limits[0]
-    
+
     # decrease/increase max accel based on vehicle pitch
     g_accel = 9.81 * sin(CI.CS.pitch)
     if g_accel > 0.:
       accel_limits[1] = max(accel_limits[1], g_accel + INCLINE_ACCEL_OFFSET + interp(current_speed, INCLINE_ACCEL_SPEED_OFFSET_BP, INCLINE_ACCEL_SPEED_OFFSET_V))
     else:
       accel_limits[1] = max(DECLINE_ACCEL_MIN, accel_limits[1] + g_accel * DECLINE_ACCEL_FACTOR)
-      
+
     return [max(CI.params.ACCEL_MIN, accel_limits[0]), min(accel_limits[1], CI.params.ACCEL_MAX)]
 
   # Volt determined by iteratively plotting and minimizing error for f(angle, speed) = steer.
@@ -110,12 +110,8 @@ class CarInterface(CarInterfaceBase):
     ret.pcmCruise = False  # stock cruise control is kept off
     ret.stoppingControl = True
     ret.startAccel = 0.8
-    ret.steerLimitTimer = 0.4
+    ret.steerLimitTimer = 0.
     ret.radarTimeStep = 1/15  # GM radar runs at 15Hz instead of standard 20Hz
-
-    # GM port is a community feature
-    # TODO: make a port that uses a car harness and it only intercepts the camera
-    ret.communityFeature = True
 
     # Presence of a camera on the object bus is ok.
     # Have to go to read_only if ASCM is online (ACC-enabled cars),
@@ -140,8 +136,8 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kiV = [0.36]
 
     if candidate == CAR.VOLT:
-      # supports stop and go, but initial engage must be above 18mph (which include conservatism)
-      ret.minEnableSpeed = -1
+      # supports stop and go, but initial engage must be above 18 mph
+      ret.minEnableSpeed = 3 * CV.MPH_TO_MS
       ret.mass = 1607. + STD_CARGO_KG
       ret.wheelbase = 2.69
       ret.steerRatio = 17.7  # Stock 15.7, LiveParameters
@@ -150,7 +146,7 @@ class CarInterface(CarInterfaceBase):
       ret.centerToFront = 0.45 * ret.wheelbase # from Volt Gen 1
 
       ret.lateralTuning.pid.kpBP = [0., 40.]
-      ret.lateralTuning.pid.kpV = [0., 0.17]
+      ret.lateralTuning.pid.kpV = [0., 0.15]
       ret.lateralTuning.pid.kiBP = [0.]
       ret.lateralTuning.pid.kiV = [0.]
       ret.lateralTuning.pid.kf = 1. # !!! ONLY for sigmoid feedforward !!!
@@ -158,6 +154,7 @@ class CarInterface(CarInterfaceBase):
 
       # Only tuned to reduce oscillations. TODO.
       ret.longitudinalTuning.kpV = [1.7, 1.3]
+      ret.longitudinalTuning.kiV = [0.36]
 
     elif candidate == CAR.MALIBU:
       # supports stop and go, but initial engage must be above 18mph (which include conservatism)
@@ -232,8 +229,9 @@ class CarInterface(CarInterfaceBase):
 
     # TODO: start from empirically derived lateral slip stiffness for the civic and scale by
     # mass and CG position, so all cars will have approximately similar dyn behaviors
-    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront, tire_stiffness_factor=tire_stiffness_factor)
-    
+    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
+                                                                         tire_stiffness_factor=tire_stiffness_factor)
+
     return ret
 
   # returns a car.CarState
@@ -282,7 +280,7 @@ class CarInterface(CarInterfaceBase):
     if cruiseEnabled and self.CS.lka_button and self.CS.lka_button != self.CS.prev_lka_button:
       self.CS.lkMode = not self.CS.lkMode
       cloudlog.info("button press event: LKA button. new value: %i" % self.CS.lkMode)
-    
+
     if t - self.params_check_last_t >= self.params_check_freq:
       self.params_check_last_t = t
       self.one_pedal_mode = self.CS._params.get_bool("OnePedalMode")
@@ -411,9 +409,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.events = events.to_msg()
 
-    # copy back carState packet to CS
     self.CS.out = ret.as_reader()
-
     return self.CS.out
 
   def apply(self, c):
