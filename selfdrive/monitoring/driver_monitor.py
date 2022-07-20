@@ -14,7 +14,7 @@ EventName = car.CarEvent.EventName
 #  Disabling or nerfing safety features will get you and your users banned from our servers.
 #  We recommend that you do not change these numbers from the defaults.
 # ******************************************************************************************
-awareness_factor = 2.
+awareness_factor = 1.
 
 class DRIVER_MONITOR_SETTINGS():
   def __init__(self, TICI=TICI, DT_DMON=DT_DMON):
