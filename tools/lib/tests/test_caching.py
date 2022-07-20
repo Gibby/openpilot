@@ -35,25 +35,25 @@ class TestFileDownload(unittest.TestCase):
     self.assertEqual(file_cached.get_length(), file_downloaded.get_length())
     self.assertEqual(response_cached, response_downloaded)
 
-  # def test_small_file(self):
-  #   # Make sure we don't force cache
-  #   os.environ["FILEREADER_CACHE"] = "0"
-  #   small_file_url = "https://raw.githubusercontent.com/commaai/openpilot/master/SAFETY.md"
-  #   #  If you want large file to be larger than a chunk
-  #   #  large_file_url = "https://commadataci.blob.core.windows.net/openpilotci/0375fdf7b1ce594d/2019-06-13--08-32-25/3/fcamera.hevc"
+  def test_small_file(self):
+    # Make sure we don't force cache
+    os.environ["FILEREADER_CACHE"] = "0"
+    small_file_url = "https://raw.githubusercontent.com/commaai/openpilot/master/docs/SAFETY.md"
+    #  If you want large file to be larger than a chunk
+    #  large_file_url = "https://commadataci.blob.core.windows.net/openpilotci/0375fdf7b1ce594d/2019-06-13--08-32-25/3/fcamera.hevc"
 
-  #   #  Load full small file
-  #   self.compare_loads(small_file_url)
+    #  Load full small file
+    self.compare_loads(small_file_url)
 
-  #   file_small = URLFile(small_file_url)
-  #   length = file_small.get_length()
+    file_small = URLFile(small_file_url)
+    length = file_small.get_length()
 
-  #   self.compare_loads(small_file_url, length - 100, 100)
-  #   self.compare_loads(small_file_url, 50, 100)
+    self.compare_loads(small_file_url, length - 100, 100)
+    self.compare_loads(small_file_url, 50, 100)
 
-  #   #  Load small file 100 bytes at a time
-  #   for i in range(length // 100):
-  #     self.compare_loads(small_file_url, 100 * i, 100)
+    #  Load small file 100 bytes at a time
+    for i in range(length // 100):
+      self.compare_loads(small_file_url, 100 * i, 100)
 
   def test_large_file(self):
     large_file_url = "https://commadataci.blob.core.windows.net/openpilotci/0375fdf7b1ce594d/2019-06-13--08-32-25/3/qlog.bz2"
@@ -66,4 +66,4 @@ class TestFileDownload(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+  unittest.main()
