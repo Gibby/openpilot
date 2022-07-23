@@ -55,7 +55,7 @@ class LateralPlanner():
     self.laneless_mode_status_buffer = False
 
     self.nudgeless_enabled = self._params.get_bool("NudgelessLaneChange")
-    self.nudgeless_delay = 1.5 # [s] amount of time blinker has to be on before nudgless lane change
+    self.nudgeless_delay = 1.0 # [s] amount of time blinker has to be on before nudgless lane change
     self.nudgeless_min_speed = 18. # no nudgeless below ≈40mph
     self.nudgeless_lane_change_start_t = 0.
     self.nudgeless_blinker_press_t = 0.
