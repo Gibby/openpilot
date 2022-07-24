@@ -105,24 +105,24 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def get_steer_feedforward_escalade_esv(desired_angle, v_ego):
-    ANGLE_COEF = 0.13862586
-    ANGLE_COEF2 = 0.01000000
-    ANGLE_OFFSET = 0. #0.34582970
-    SPEED_OFFSET = 6.99311602
-    SIGMOID_COEF_RIGHT = 0.37903976
-    SIGMOID_COEF_LEFT = 0.34919222
-    SPEED_COEF = 0.08945822
+    ANGLE_COEF = 6.00658227
+    ANGLE_COEF2 = 0.62121738
+    ANGLE_OFFSET = 0.41318402
+    SPEED_OFFSET = 0.00000000
+    SIGMOID_COEF_RIGHT = 0.11119260
+    SIGMOID_COEF_LEFT = 0.10000000
+    SPEED_COEF = 0.04551779
     return get_steer_feedforward_sigmoid1(desired_angle, v_ego, ANGLE_COEF, ANGLE_COEF2, ANGLE_OFFSET, SPEED_OFFSET, SIGMOID_COEF_RIGHT, SIGMOID_COEF_LEFT, SPEED_COEF)
 
   @staticmethod
   def get_steer_feedforward_escalade_esv_torque(desired_lateral_accel, v_ego):
-    ANGLE_COEF = 4.99999987
-    ANGLE_COEF2 = 0.23376574
-    ANGLE_OFFSET = 0. #0.13301549
-    SPEED_OFFSET = 19.95054898
-    SIGMOID_COEF_RIGHT = 0.32216068
-    SIGMOID_COEF_LEFT = 0.28552681
-    SPEED_COEF = 1.19785746
+    ANGLE_COEF = 5.43730254
+    ANGLE_COEF2 = 0.23417617
+    ANGLE_OFFSET = 0.13294737
+    SPEED_OFFSET = 19.99999997
+    SIGMOID_COEF_RIGHT = 0.32163379
+    SIGMOID_COEF_LEFT = 0.28515854
+    SPEED_COEF = 1.21940337
     return get_steer_feedforward_erf(desired_lateral_accel, v_ego, ANGLE_COEF, ANGLE_COEF2, ANGLE_OFFSET, SPEED_OFFSET, SIGMOID_COEF_RIGHT, SIGMOID_COEF_LEFT, SPEED_COEF)
 
   def get_steer_feedforward_function(self):
